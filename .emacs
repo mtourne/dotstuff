@@ -23,7 +23,16 @@
       (goto-char (point-max))
       (eval-print-last-sexp))))
 
-(el-get 'sync)
+; list all packages you want installed
+(setq my-el-get-packages
+      '(yaml-mode web-mode undo-tree package
+                  markdown-mode iy-go-to-char helm-swoop helm goto-chg
+                  git-modes projectile f s expand-region pkg-info epl el-get
+                  magit dash color-theme auto-complete popup cl-lib fuzzy
+                  lua-mode ample-regexps ace-jump-mode ac-helm))
+
+;; automatically reinstall
+(el-get 'sync my-el-get-packages)
 
 ;;; ELPA ;;;
 (require 'package)
@@ -208,6 +217,11 @@
 ;; ace: jump around
 (require 'ace-jump-mode)
 (global-set-key (kbd "M-s") 'ace-jump-mode)
+
+;; goto last change
+(require 'goto-chg)
+(global-set-key [(control ?.)] 'goto-last-change)
+(global-set-key [(control ?,)] 'goto-last-change-reverse)
 
 ;;; Opening New lines ;;;
 ;; Behave like vi's o command
