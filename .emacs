@@ -26,10 +26,11 @@
 ; list all packages you want installed
 (setq my-el-get-packages
       '(yaml-mode web-mode undo-tree package
-                  markdown-mode iy-go-to-char helm-swoop helm goto-chg
+                  markdown-mode helm-swoop helm goto-chg
                   git-modes projectile f s expand-region pkg-info epl el-get
                   magit dash color-theme auto-complete popup cl-lib fuzzy
-                  lua-mode ample-regexps ace-jump-mode ac-helm))
+                  lua-mode ample-regexps ace-jump-mode ace-window
+                  ac-helm helm-projectile))
 
 ;; automatically reinstall
 (el-get 'sync my-el-get-packages)
@@ -69,6 +70,7 @@
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
+ '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
@@ -76,10 +78,6 @@
    (quote
     (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)))
  '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify)))
-
-;;; start server
-(server-start)
-
 
 ;;;;; Completion thingies ;;;
 
@@ -122,7 +120,7 @@
 (require 'helm-swoop)
 
 (helm-mode 1)
-(helm-adaptative-mode 1)
+;(helm-adaptative-mode 1)
 (helm-autoresize-mode 1)
 (helm-push-mark-mode 1)
 
@@ -131,6 +129,10 @@
 (require 'projectile)
 (projectile-global-mode)
 (setq projectile-completion-system 'helm)
+(setq projectile-enable-caching t)
+; disable remote file caching
+(setq projectile-file-exists-remote-cache-expire nil)
+
 
 (helm-projectile-on)
 
@@ -152,15 +154,42 @@
 (global-set-key (kbd "C-x r l") #'helm-filtered-bookmarks)
 (global-set-key (kbd "M-y")     #'helm-show-kill-ring)
 
-;;; SWOOP ;;;
-(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-;; When doing isearch, hand the word over to helm-swoop
-(define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-;; From helm-swoop to helm-multi-swoop-all
-(define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+;;; SWOOP ;;; better i-search
 
-;(global-set-key (kbd "M-s o")   #'helm-swoop)
-;(global-set-key (kbd "M-s /")   #'helm-multi-swoop-all)
+(global-set-key (kbd "M-s") 'helm-swoop)
+;; swoop-all searches all the buffers
+(global-set-key (kbd "C-M-s") 'helm-multi-swoop-all)
+;; When doing isearch, hand the word over to helm-swoop
+(define-key isearch-mode-map (kbd "M-s") 'helm-swoop-from-isearch)
+;; From helm-swoop to helm-multi-swoop-all
+(define-key helm-swoop-map (kbd "M-s") 'helm-multi-swoop-all-from-helm-swoop)
+
+;; Move up and down like isearch
+(define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
+(define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
+(define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
+(define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line)
+
+;; If this value is t, split window inside the current window
+;;(setq helm-swoop-split-with-multiple-windows t)
+;; Split direcion. 'split-window-vertically or 'split-window-horizontally
+(setq helm-swoop-split-direction 'split-window-horizontally)
+
+;; If nil, you can slightly boost invoke speed in exchange for text color
+(setq helm-swoop-speed-or-color nil)
+
+;; If you prefer fuzzy matching
+(setq helm-swoop-use-fuzzy-match t)
+
+;; Disable pre-input
+(setq helm-swoop-pre-input-function
+      (lambda () ""))
+
+
+;; If you prefer fuzzy matching
+;;(setq helm-swoop-use-fuzzy-match t)
+
+;;; HELM configs ;;;
 
 (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
       helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
@@ -180,6 +209,9 @@
 (setq helm-buffers-fuzzy-matching t
       helm-recentf-fuzzy-match    t)
 
+;; prevent from trying to open what's under the cursor for opening files
+(setq helm-find-file-ignore-thing-at-point t)
+
 ;;; MISC ;;;
 (setq find-grep-options "-q -i")
 (line-number-mode 1)
@@ -190,7 +222,8 @@
 (require 'auto-complete-config)
 (ac-config-default)
 
-;; auto-complete helm window - uses M--, next to dabbrev M-/
+;;; auto-complete helm window - uses M--, next to dabbrev M-/
+;; Note (mtourne): Not using often, maybe should replace dabbrev
 (require 'ac-helm)  ;; Not necessary if using ELPA package
 (global-set-key (kbd "M--") 'ac-complete-with-helm)
 (define-key ac-complete-mode-map (kbd "M--") 'ac-complete-with-helm)
@@ -211,17 +244,18 @@
 
 ;;; Jumping Around ;;;
 ;; iy-go-to-char (go to char)
-(require 'iy-go-to-char)
+(require 'iy-go-to-char) ; installed by 'install-package' (melpa)
 (global-set-key (kbd "M-m") 'iy-go-to-char)
 (global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
-;; ace: jump around
-(require 'ace-jump-mode)
-(global-set-key (kbd "M-s") 'ace-jump-mode)
+;; ACE ;; jump around with a head char
+; Note (mtourne): wasn't using much; replacing by SWOOP
+;(require 'ace-jump-mode)
+;(global-set-key (kbd "M-s") 'ace-jump-mode)
 
 ;; goto last change
 (require 'goto-chg)
-(global-set-key [(control ?.)] 'goto-last-change)
-(global-set-key [(control ?,)] 'goto-last-change-reverse)
+(global-set-key (kbd "C-.") 'goto-last-change)
+(global-set-key (kbd "C-,") 'goto-last-change-reverse)
 
 ;;; Opening New lines ;;;
 ;; Behave like vi's o command
@@ -292,6 +326,7 @@
 ;(setq-default tab-width 4)
 (setq-default conf-basic-offset 4)
 (setq c-basic-offset 4)
+(setq js-indent-level 2)
 (setq indent-line-function 'insert-tab)
 
 (defun my-indent-setup ()
@@ -328,8 +363,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(diff-added ((t (:foreground "Green"))) t)
- '(diff-removed ((t (:foreground "Red"))) t))
+ '(diff-added ((t (:foreground "Green"))))
+ '(diff-removed ((t (:foreground "Red")))))
 
 
 ;;; Tags ;;;
@@ -362,13 +397,43 @@
 (add-to-list 'auto-mode-alist '("\\.sls\\'" . yaml-mode))
 
 
-;;; Navigation ;;;
-;; window movements
+;;; NAVIGATION ;;;
+;;; window movements
 (global-set-key [M-left] 'windmove-left)          ; move to left windnow
 (global-set-key [M-right] 'windmove-right)        ; move to right window
 (global-set-key [M-up] 'windmove-up)              ; move to upper window
 (global-set-key [M-down] 'windmove-down)          ; move to downer window
-;; frame movement
+;;; frame movement
 (define-key global-map "\M-`" 'other-frame)
-;; like c-x o
-(global-set-key (kbd "C-<escape>") 'other-window)
+;;; like c-x o - too hard to reach
+;; (global-set-key (kbd "C-<escape>") 'other-window)
+;;; Note (mtourne): not sure what this is for?
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+;;; ace-window - smarter movement
+(require 'ace-window)
+(ace-window-display-mode)
+(global-set-key (kbd "M-c") 'ace-window)
+(setq aw-dispatch-always t)
+;; makes the window switch key on the home row
+(setq aw-keys '(?a ?o ?e ?u ?i ?1 ?2 ?3 ?4 ?5))
+;; prevent other frames (windows) to be counted
+;(setq aw-scope 'frame)
+;; Note (mtourne): these don't seem to work
+(defvar aw-dispatch-alist
+  '((?x aw-delete-window " Ace - Delete Window")
+    (?s aw-swap-window " Ace - Swap Window")
+    (?p aw-flip-window " Ace - Previous window")
+    (?v aw-split-window-vert " Ace - Split Vert Window")
+    (?h aw-split-window-horz " Ace - Split Horz Window")
+    (?m delete-other-windows " Ace - Maximize curr Window")
+    )
+  "List of actions for `aw-dispatch-default'.")
+
+;; magit
+(global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+
+;; DISABLE
+;; compose-mail C-x m - hitting instead of C-x b
+(global-unset-key (kbd "C-x m"))
