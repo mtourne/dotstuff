@@ -1,3 +1,6 @@
+;; confirm before killing
+(setq confirm-kill-emacs 'y-or-n-p)
+
 ;; start server
 (server-start)
 
@@ -27,10 +30,14 @@
 (setq my-el-get-packages
       '(yaml-mode web-mode undo-tree package
                   markdown-mode helm-swoop helm goto-chg
-                  git-modes projectile f s expand-region pkg-info epl el-get
+                  git-modes projectile f s pkg-info epl el-get
                   magit dash color-theme auto-complete popup cl-lib fuzzy
                   lua-mode ample-regexps ace-jump-mode ace-window
-                  ac-helm helm-projectile))
+                  ac-helm helm-projectile
+                  rjsx-mode js2-mode
+		  autopair
+                  expand-region ;github version seems bork
+                  ))
 
 ;; automatically reinstall
 (el-get 'sync my-el-get-packages)
@@ -38,9 +45,16 @@
 ;;; ELPA ;;;
 (require 'package)
 (package-initialize)
-(add-to-list 'package-archives '("elpa" . "http://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("marmalade" . "https://marmalade-repo.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")))
+
+;;;; Regions ;;;;
+;; Note (mtourne): puting expand-region high in the conf seems
+;; to have fixed it
+;; expand semantic region
+(require 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
 
 
 ;;; Emacs Faces ;;;;
@@ -72,6 +86,7 @@
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
+ '(package-selected-packages (quote (rjsx-mode iy-go-to-char)))
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
  '(tab-stop-list
@@ -79,7 +94,7 @@
     (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)))
  '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify)))
 
-;;;;; Completion thingies ;;;
+;;; Ido completion ;;; deprecated for helm.
 
 ;;; iswitchb
 ;; deprec
@@ -120,6 +135,7 @@
 (require 'helm-swoop)
 
 (helm-mode 1)
+; doesn't seem to work
 ;(helm-adaptative-mode 1)
 (helm-autoresize-mode 1)
 (helm-push-mark-mode 1)
@@ -232,15 +248,13 @@
 (global-set-key (kbd "M-p") 'backward-paragraph)
 (global-set-key (kbd "M-n") 'forward-paragraph)
 
-;;;; Regions ;;;;
-;; expand semantic region
-(require 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
-;; will overwrite whatever is selected
+;;; will overwrite whatever is selected
 (pending-delete-mode t)
-;; will surround a region with (), [], "" automatically
-(electric-pair-mode t)
-
+;;; will surround a region with (), [], "" automatically
+;;(electric-pair-mode t)
+;;; test autopair instead
+(require 'autopair)
+(autopair-global-mode)  ;; enable autopair in all buffers
 
 ;;; Jumping Around ;;;
 ;; iy-go-to-char (go to char)
@@ -248,9 +262,11 @@
 (global-set-key (kbd "M-m") 'iy-go-to-char)
 (global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
 ;; ACE ;; jump around with a head char
-; Note (mtourne): wasn't using much; replacing by SWOOP
-;(require 'ace-jump-mode)
-;(global-set-key (kbd "M-s") 'ace-jump-mode)
+(require 'ace-jump-mode)
+(global-set-key (kbd "M-.") 'ace-jump-mode)
+;; jump only in the current window (active buffer)
+;; default ('global) is all windows & frames.
+(setq ace-jump-mode-scope 'window)
 
 ;; goto last change
 (require 'goto-chg)
@@ -295,8 +311,9 @@
 (global-set-key [f2] 'find-dired)
 
 ;; compilation
-        (global-set-key [f8] 'recompile)
-        ; this changes the default behavior of "some files have changes blablabla"
+(global-set-key [f8] 'recompile)
+
+; this changes the default behavior of "some files have changes blablabla"
 (add-to-list 'save-some-buffers-action-alist
              `(?k ,(lambda (buf) (kill-buffer buf))
                   ,(purecopy "do not save changes and kill the buffer")))
@@ -315,9 +332,12 @@
 ;; mac homebrew path
 (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
 
-;; inconsolata font
+;;; inconsolata font
 (set-default-font
  "-*-Source Code Pro-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
+;; set same font to new window
+(add-to-list 'default-frame-alist
+             '(font .  "-*-Source Code Pro-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1"))
 
 
 ;;; Indentation ;;;
@@ -410,6 +430,7 @@
 ;;; Note (mtourne): not sure what this is for?
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+
 ;;; ace-window - smarter movement
 (require 'ace-window)
 (ace-window-display-mode)
@@ -430,10 +451,10 @@
     )
   "List of actions for `aw-dispatch-default'.")
 
-;; magit
+;;; GIT - magit
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
 
-;; DISABLE
+;; DISABLED
 ;; compose-mail C-x m - hitting instead of C-x b
 (global-unset-key (kbd "C-x m"))
