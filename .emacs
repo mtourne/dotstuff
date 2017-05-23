@@ -29,14 +29,19 @@
 ; list all packages you want installed
 (setq my-el-get-packages
       '(yaml-mode web-mode undo-tree package
-                  markdown-mode helm-swoop helm goto-chg
-                  git-modes projectile f s pkg-info epl el-get
+                  markdown-mode  goto-chg
+                  git-modes f s pkg-info epl el-get
                   magit dash color-theme auto-complete popup cl-lib fuzzy
-                  lua-mode ample-regexps ace-jump-mode ace-window
+                  projectile    ;; project based stuff - ever used ?
+                  helm helm-swoop   ;; window for picking
+                  lua-mode
+                  ample-regexps ;; design regex - almost never used
+                  ace-window    ;; jump between windows
+                  avy           ;; jump to characters - replaces ace-jump-mode
                   ac-helm helm-projectile
-                  rjsx-mode js2-mode
-		  autopair
-                  expand-region ;github version seems bork
+                  rjsx-mode js2-mode    ;; javascript
+		  autopair      ;; closing parens / quotes
+                  expand-region ;; C-= expand selection
                   ))
 
 ;; automatically reinstall
@@ -86,7 +91,7 @@
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
- '(package-selected-packages (quote (rjsx-mode iy-go-to-char)))
+ '(package-selected-packages (quote (clipmon rjsx-mode iy-go-to-char)))
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
  '(tab-stop-list
@@ -168,6 +173,15 @@
 (global-set-key (kbd "C-x C-f") #'helm-find-files)
 (global-set-key (kbd "C-x C-r") #'helm-recentf)
 (global-set-key (kbd "C-x r l") #'helm-filtered-bookmarks)
+
+;; kill-ring doesn't add system clipboard stuff, enter clipmon which is supposed to do that
+;; monitor the system clipboard and add any changes to the kill ring
+(require 'clipmon)
+(add-to-list 'after-init-hook 'clipmon-mode-start)
+(setq clipmon-timer-interval 1) ;; insert every second
+;; XX (mtourne): added C-y as well since I seem to always C-y, undo and then M-y
+;; Removed: as it always becomes a two step paste - kept clipmon
+;;(global-set-key (kbd "C-y")     #'helm-show-kill-ring)
 (global-set-key (kbd "M-y")     #'helm-show-kill-ring)
 
 ;;; SWOOP ;;; better i-search
@@ -234,15 +248,27 @@
 (column-number-mode 1)
 (show-paren-mode 1)
 
-;; auto-complete stuff
-(require 'auto-complete-config)
-(ac-config-default)
+;;;; COMPLETION ;;;;
 
-;;; auto-complete helm window - uses M--, next to dabbrev M-/
-;; Note (mtourne): Not using often, maybe should replace dabbrev
-(require 'ac-helm)  ;; Not necessary if using ELPA package
-(global-set-key (kbd "M--") 'ac-complete-with-helm)
-(define-key ac-complete-mode-map (kbd "M--") 'ac-complete-with-helm)
+;;; auto-complete - deprecated
+;;(require 'auto-complete-config)
+;;(ac-config-default)
+
+;;; company 'complete 'anything' - replaces auto-complete
+(add-hook 'after-init-hook 'global-company-mode)
+
+;;; HELM Window - uses M--, next to dabbrev M-/
+
+;;; auto-complete window
+;;(require 'ac-helm)  ;; Not necessary if using ELPA package
+;;(global-set-key (kbd "M--") 'ac-complete-with-helm)
+;;(define-key ac-complete-mode-map (kbd "M--") 'ac-complete-with-helm)
+;; use helm-dabbrev to complete anything - instead of ac-helm (helm autocomplete)
+
+;;; dabbrev window
+(require 'helm-dabbrev)
+(setq helm-dabbrev-always-search-all t)
+(global-set-key (kbd "M--") 'helm-dabbrev)
 
 ;; paragraph movement
 (global-set-key (kbd "M-p") 'backward-paragraph)
@@ -261,12 +287,28 @@
 (require 'iy-go-to-char) ; installed by 'install-package' (melpa)
 (global-set-key (kbd "M-m") 'iy-go-to-char)
 (global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
-;; ACE ;; jump around with a head char
-(require 'ace-jump-mode)
-(global-set-key (kbd "M-.") 'ace-jump-mode)
-;; jump only in the current window (active buffer)
-;; default ('global) is all windows & frames.
-(setq ace-jump-mode-scope 'window)
+;;; ACE ;; jump around with a head char - deprecated in favor of avy
+;; (require 'ace-jump-mode)
+;; ;;; jumps to the beginning of a word
+;; ;; (global-set-key (kbd "M-.") 'ace-jump-mode)
+;; ;;; jumps to the any char
+;; (global-set-key (kbd "M-.") 'ace-jump-char-mode)
+;; ;; jump only in the current window (active buffer)
+;; ;; default ('global) is all windows & frames.
+;; ;; (setq ace-jump-mode-scope 'window)
+;; (setq ace-jump-mode-scope 'global)
+
+;;; AVY - jump to things
+(global-set-key (kbd "M-.") 'avy-goto-char-2)
+(setq avy-all-windows 'all-frames)
+;; mildly useful: jump faster to an isearch visible result using avy
+;; mapped C-. and M-. in that mode to accomody for mistypes
+(eval-after-load "isearch"
+  '(define-key isearch-mode-map (kbd "C-.") 'avy-isearch)
+  )
+(eval-after-load "isearch"
+  '(define-key isearch-mode-map (kbd "M-.") 'avy-isearch)
+  )
 
 ;; goto last change
 (require 'goto-chg)
@@ -354,6 +396,56 @@
 (add-hook 'c-mode-hook 'my-indent-setup)
 (add-hook 'c++-mode-hook 'my-indent-setup)
 
+
+;;; DELETING ;;;;
+
+;; whitespace
+
+;; delete up to non-whitespace
+;; Note (mtourne): this is non ideal.
+;;  I need to write a function so that control backspace does :
+;;  delete last word unless there is a line break and then only does fixup-whitespace
+;; (global-set-key [(shift backspace)] 'fixup-whitespace)
+
+;; potential answer from
+;; https://emacs.stackexchange.com/questions/30401/backward-kill-word-kills-too-much-how-to-make-it-more-intelligent
+
+;; (defun backward-kill-char-or-word ()
+;;   "Delete the character or word before point."
+;;   (interactive)
+;;   (if (looking-back "\\w" 1)
+;;       (backward-kill-word 1)
+;;     (backward-delete-char 1)))
+;;
+;; (defun backward-kill-char-or-word ()
+;;   (interactive)
+;;   (cond
+;;    ((looking-back (rx (char word)) 1)
+;;     (backward-kill-word 1))
+;;    ((looking-back (rx (char blank)) 1)
+;;     (delete-horizontal-space t))
+;;    (t
+;;     (backward-delete-char 1))))
+
+
+;; adapted from
+;; https://stackoverflow.com/questions/13896402/kill-word-forward-word-should-stop-at-newline
+;; this is not perfect as it will not go past the beginning of the line.
+
+(defun backward-word-stop-eol (arg)
+  (interactive "p")
+  (let ((start (point)))
+    (save-restriction
+      (save-excursion
+        (move-beginning-of-line 1)
+        (narrow-to-region start (point)))
+      (backward-word arg))))
+
+(defun backward-kill-word-stop-eol (arg)
+  (interactive "p")
+  (kill-region (point) (progn (backward-word-stop-eol arg) (point))))
+
+(global-set-key [(shift backspace)] 'backward-kill-word-stop-eol)
 
 ;;; delete whitespace before saving ;;;
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
