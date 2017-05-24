@@ -35,13 +35,17 @@
                   projectile    ;; project based stuff - ever used ?
                   helm helm-swoop   ;; window for picking
                   lua-mode
-                  ample-regexps ;; design regex - almost never used
+
                   ace-window    ;; jump between windows
                   avy           ;; jump to characters - replaces ace-jump-mode
                   ac-helm helm-projectile
                   rjsx-mode js2-mode    ;; javascript
 		  autopair      ;; closing parens / quotes
                   expand-region ;; C-= expand selection
+                  restclient    ;; easily describe/test rest endpoints
+
+                  ;; deprecs :
+                  ;; ample-regexps ;; design regex; never used see helm-regexp
                   ))
 
 ;; automatically reinstall
@@ -139,23 +143,16 @@
 (require 'helm-config)
 (require 'helm-swoop)
 
-(helm-mode 1)
-; doesn't seem to work
-;(helm-adaptative-mode 1)
-(helm-autoresize-mode 1)
-(helm-push-mark-mode 1)
 
-
-;; projectile
+;;; PROJECTILE ;;; - may deprec
 (require 'projectile)
 (projectile-global-mode)
 (setq projectile-completion-system 'helm)
 (setq projectile-enable-caching t)
 ; disable remote file caching
 (setq projectile-file-exists-remote-cache-expire nil)
-
-
 (helm-projectile-on)
+
 
 ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
 ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
@@ -169,10 +166,17 @@
 
 (global-set-key (kbd "C-x b")   #'helm-mini)
 (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
-(global-set-key (kbd "C-x C-m") #'helm-M-x)
+;; (global-set-key (kbd "C-x C-m") #'helm-M-x)
+;; replace M-x with helm-M-x
+(global-set-key (kbd "M-x") #'helm-M-x)
+
+;; helm find files
+; You can invoke grep on the currently highlighted entry with C-s. C-u C-s performs a recursive grep.
 (global-set-key (kbd "C-x C-f") #'helm-find-files)
+
 (global-set-key (kbd "C-x C-r") #'helm-recentf)
 (global-set-key (kbd "C-x r l") #'helm-filtered-bookmarks)
+
 
 ;; kill-ring doesn't add system clipboard stuff, enter clipmon which is supposed to do that
 ;; monitor the system clipboard and add any changes to the kill ring
@@ -185,7 +189,6 @@
 (global-set-key (kbd "M-y")     #'helm-show-kill-ring)
 
 ;;; SWOOP ;;; better i-search
-
 (global-set-key (kbd "M-s") 'helm-swoop)
 ;; swoop-all searches all the buffers
 (global-set-key (kbd "C-M-s") 'helm-multi-swoop-all)
@@ -220,20 +223,17 @@
 ;;(setq helm-swoop-use-fuzzy-match t)
 
 ;;; HELM configs ;;;
+;; from : https://tuhdo.github.io/helm-intro.html
 
 (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
       helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-      helm-ff-file-name-history-use-recentf t)
+      helm-ff-file-name-history-use-recentf t
+      helm-echo-input-in-header-line t)
 
-(setq helm-ff-transformer-show-only-basename nil
-      helm-adaptive-history-file             "~/.emacs.d/data/helm-history"
-      helm-yank-symbol-first                 t
-      helm-move-to-line-cycle-in-source      t
-      helm-buffers-fuzzy-matching            t
-      helm-ff-auto-update-initial-value      t)
-
+;; (setq helm-autoresize-max-height 0)
+;; (setq helm-autoresize-min-height 20)
 (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
 
 (setq helm-buffers-fuzzy-matching t
@@ -241,6 +241,10 @@
 
 ;; prevent from trying to open what's under the cursor for opening files
 (setq helm-find-file-ignore-thing-at-point t)
+
+(helm-autoresize-mode 1)
+(helm-mode 1)
+
 
 ;;; MISC ;;;
 (setq find-grep-options "-q -i")
@@ -281,6 +285,11 @@
 ;;; test autopair instead
 (require 'autopair)
 (autopair-global-mode)  ;; enable autopair in all buffers
+(add-hook 'python-mode-hook
+          #'(lambda ()
+              (setq autopair-handle-action-fns
+                    (list #'autopair-default-handle-action
+                          #'autopair-python-triple-quote-action))))
 
 ;;; Jumping Around ;;;
 ;; iy-go-to-char (go to char)
@@ -299,8 +308,29 @@
 ;; (setq ace-jump-mode-scope 'global)
 
 ;;; AVY - jump to things
-(global-set-key (kbd "M-.") 'avy-goto-char-2)
+
+;; pick two chars and then jump
+;; (global-set-key (kbd "M-.") 'avy-goto-char-2)
+
+;; timer 0.5 s to type as many chars as wanted
+(global-set-key (kbd "M-.") 'avy-goto-char-timer)
+
+;; C-u M-. will do only only buffer highligted (opposite all-windows)
+
+;; attempt at making that behavior or a stand alone function
+;; to search only the current buffer
+(defun avy-goto-char-timer-this-window ()
+  (interactive "P")
+  (setq avy-all-windows nil)
+  (avy-goto-char-timer)
+  )
+(global-set-key (kbd "M-,") '(avy-goto-char-timer-this-window))
+
+;; goto highligted line
+(global-set-key (kbd "M-g f") 'avy-goto-line)
+
 (setq avy-all-windows 'all-frames)
+;;(setq avy-all-windows nil)
 ;; mildly useful: jump faster to an isearch visible result using avy
 ;; mapped C-. and M-. in that mode to accomody for mistypes
 (eval-after-load "isearch"
@@ -546,6 +576,13 @@
 ;;; GIT - magit
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+
+
+;;; RESTclient
+;; make .rst // .rest files to describe REST commands
+(setq auto-mode-alist
+      (append '(("\\.rst$" . restclient-mode)
+                ("\\.rest$" . restclient-mode)) auto-mode-alist))
 
 ;; DISABLED
 ;; compose-mail C-x m - hitting instead of C-x b
