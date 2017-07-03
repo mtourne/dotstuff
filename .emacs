@@ -44,6 +44,9 @@
                   expand-region ;; C-= expand selection
                   restclient    ;; easily describe/test rest endpoints
 
+                  neotree       ;; add a bar to go through directories,
+                                ;; useful for directory-organized protjects
+
                   ;; deprecs :
                   ;; ample-regexps ;; design regex; never used see helm-regexp
                   ))
@@ -258,8 +261,21 @@
 ;;(require 'auto-complete-config)
 ;;(ac-config-default)
 
-;;; company 'complete 'anything' - replaces auto-complete
+;;; COMPANY 'auto-complete 'anything' - replaces auto-complete
 (add-hook 'after-init-hook 'global-company-mode)
+;; ;; pick with a number in the completion list
+;; ;; Note (mtourne): default picking a number collides with TotalSpaces in MacOS
+;; ;; remapping to C-<1 through 10>
+;; (setq company-show-numbers t)
+;; (defun setup_company_macro ()
+;;   (dotimes (i 10)
+;;     (define-key company-active-map (read-kbd-macro (format "C-%d" i))
+;;       'company-complete-number))
+;;   )
+;; ;; run macro setting after this (add-hook 'after-init-hook 'global-company-mode)
+;; ;; ie: in a after-init-hook as well.
+;; (add-hook 'after-init-hook 'setup_company_macro)
+
 
 ;;; HELM Window - uses M--, next to dabbrev M-/
 
@@ -292,7 +308,8 @@
                           #'autopair-python-triple-quote-action))))
 
 ;;; Jumping Around ;;;
-;; iy-go-to-char (go to char)
+;;; iy-go-to-char (go to char)
+;;; deprecated - replaced M-m with avy.
 (require 'iy-go-to-char) ; installed by 'install-package' (melpa)
 (global-set-key (kbd "M-m") 'iy-go-to-char)
 (global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
@@ -308,31 +325,36 @@
 ;; (setq ace-jump-mode-scope 'global)
 
 ;;; AVY - jump to things
+;; Note (mtourne): quite like this adding M-m
+;; keeping M-. as well
 
 ;; pick two chars and then jump
 ;; (global-set-key (kbd "M-.") 'avy-goto-char-2)
 
 ;; timer 0.5 s to type as many chars as wanted
 (global-set-key (kbd "M-.") 'avy-goto-char-timer)
+;; Note (mtourne): may replace iy-goto-char with avy
+;; (global-set-key (kbd "M-m") 'avy-goto-char-timer)
 
-;; C-u M-. will do only only buffer highligted (opposite all-windows)
-
-;; attempt at making that behavior or a stand alone function
+;; C-u <avy shortcut> will do only only buffer highligted (opposite all-windows)
+;; make that behavior a stand alone function
 ;; to search only the current buffer
 (defun avy-goto-char-timer-this-window ()
-  (interactive "P")
-  (setq avy-all-windows nil)
-  (avy-goto-char-timer)
-  )
-(global-set-key (kbd "M-,") '(avy-goto-char-timer-this-window))
+  (interactive)
+  (let ((avy-all-windows nil))
+    (avy-goto-char-timer)))
+(global-set-key (kbd "M-,") 'avy-goto-char-timer-this-window)
 
-;; goto highligted line
-(global-set-key (kbd "M-g f") 'avy-goto-line)
+;; goto highligted line ;; may change to M-l if useful
+(global-set-key (kbd "M-g l") 'avy-goto-line)
 
 (setq avy-all-windows 'all-frames)
 ;;(setq avy-all-windows nil)
 ;; mildly useful: jump faster to an isearch visible result using avy
 ;; mapped C-. and M-. in that mode to accomody for mistypes
+;; (eval-after-load "isearch"
+;;   '(define-key isearch-mode-map (kbd "M-m") 'avy-isearch)
+;;   )
 (eval-after-load "isearch"
   '(define-key isearch-mode-map (kbd "C-.") 'avy-isearch)
   )
@@ -572,6 +594,10 @@
     (?m delete-other-windows " Ace - Maximize curr Window")
     )
   "List of actions for `aw-dispatch-default'.")
+
+;;; Neotre -- explore tree structure
+;;(require 'neotree)
+(global-set-key [f10] 'neotree-toggle)
 
 ;;; GIT - magit
 (global-set-key (kbd "C-x g") 'magit-status)
