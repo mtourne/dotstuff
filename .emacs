@@ -47,6 +47,7 @@
                   neotree       ;; add a bar to go through directories,
                                 ;; useful for directory-organized protjects
 
+		  material-theme
                   ;; deprecs :
                   ;; ample-regexps ;; design regex; never used see helm-regexp
                   ))
@@ -76,25 +77,37 @@
 ;; Remove splash screen
 (setq inhibit-splash-screen t)
 
-;;; Color Theme
+;;; Color Theme ;;;;
 ;; old one
-(require 'color-theme)
-(color-theme-initialize)
-(require 'color-theme-tango)
-(color-theme-tango)
-;; new one
+
+;;(load-theme 'material-light t)
+(load-theme 'material t)
+
+;; color-theme doesn't need to be required anymore
+;;(require 'color-theme)
+;;(color-theme-initialize)
+
+;; old customized color-theme-tango
+;; in `dotstuff/emacs/color-theme-tango.el`
+;;(require 'color-theme-tango)
+;;(color-theme-tango)
+
+;; tango-tango, similar to customized above
 ;(load-theme 'tangotango t)
 
 ;; invert face (colore theme is better)
 ;(invert-face 'default)
 
-;; Config (generated)
+;;;; Config (generated) ;;;;
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
+ '(custom-safe-themes
+   (quote
+    ("5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" default)))
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
