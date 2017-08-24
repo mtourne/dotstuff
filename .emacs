@@ -111,7 +111,12 @@
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
- '(package-selected-packages (quote (clipmon rjsx-mode iy-go-to-char)))
+ '(package-selected-packages (quote (
+                                     clipmon
+                                     rjsx-mode
+                                     ;; DEPREC
+                                     ;; iy-go-to-char
+                                     )))
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
  '(tab-stop-list
