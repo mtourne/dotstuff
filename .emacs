@@ -48,8 +48,12 @@
                                 ;; useful for directory-organized protjects
 
 		  material-theme
+
+                  powerline
+                  spaceline
                   ;; deprecs :
                   ;; ample-regexps ;; design regex; never used see helm-regexp
+
                   ))
 
 ;; automatically reinstall
@@ -77,11 +81,21 @@
 ;; Remove splash screen
 (setq inhibit-splash-screen t)
 
-;;; Color Theme ;;;;
+
+;;; powerline ;;;
+;;(require 'powerline)
+;;(powerline-default-theme)
+
+;;; spaceline ;;;
+(require 'spaceline-config)
+(spaceline-spacemacs-theme)
+
+;;; Color Theme ;;;
 ;; old one
 
 ;;(load-theme 'material-light t)
-(load-theme 'material t)
+;;(load-theme 'material t)
+(load-theme 'ample-zen t)
 
 ;; color-theme doesn't need to be required anymore
 ;;(require 'color-theme)
@@ -104,25 +118,46 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
  '(column-number-mode t)
  '(custom-safe-themes
    (quote
-    ("5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" default)))
+    ("98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" default)))
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
+ '(fci-rule-color "#37474f")
+ '(hl-sexp-background-color "#1c1f26")
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
- '(package-selected-packages (quote (
-                                     clipmon
-                                     rjsx-mode
-                                     ;; DEPREC
-                                     ;; iy-go-to-char
-                                     )))
+ '(package-selected-packages (quote (ample-zen-theme gruvbox-theme clipmon rjsx-mode)))
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
  '(tab-stop-list
    (quote
     (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)))
- '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify)))
+ '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify))
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#f36c60")
+     (40 . "#ff9800")
+     (60 . "#fff59d")
+     (80 . "#8bc34a")
+     (100 . "#81d4fa")
+     (120 . "#4dd0e1")
+     (140 . "#b39ddb")
+     (160 . "#f36c60")
+     (180 . "#ff9800")
+     (200 . "#fff59d")
+     (220 . "#8bc34a")
+     (240 . "#81d4fa")
+     (260 . "#4dd0e1")
+     (280 . "#b39ddb")
+     (300 . "#f36c60")
+     (320 . "#ff9800")
+     (340 . "#fff59d")
+     (360 . "#8bc34a"))))
+ '(vc-annotate-very-old-color nil))
 
 ;;; Ido completion ;;; deprecated for helm.
 
@@ -631,3 +666,9 @@
 ;; DISABLED
 ;; compose-mail C-x m - hitting instead of C-x b
 (global-unset-key (kbd "C-x m"))
+
+
+;; Remote edit
+(defun connect-pisa ()
+  (interactive)
+  (dired "/mtourne@75.101.62.121:/"))
