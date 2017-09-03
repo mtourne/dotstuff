@@ -363,9 +363,9 @@
 ;;; Jumping Around ;;;
 ;;; iy-go-to-char (go to char)
 ;;; deprecated - replaced M-m with avy.
-(require 'iy-go-to-char) ; installed by 'install-package' (melpa)
-(global-set-key (kbd "M-m") 'iy-go-to-char)
-(global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
+;;(require 'iy-go-to-char) ; installed by 'install-package' (melpa)
+;;(global-set-key (kbd "M-m") 'iy-go-to-char)
+;;(global-set-key (kbd "C-M-m") 'iy-go-to-char-backward)
 ;;; ACE ;; jump around with a head char - deprecated in favor of avy
 ;; (require 'ace-jump-mode)
 ;; ;;; jumps to the beginning of a word
@@ -386,8 +386,8 @@
 
 ;; timer 0.5 s to type as many chars as wanted
 (global-set-key (kbd "M-.") 'avy-goto-char-timer)
-;; Note (mtourne): may replace iy-goto-char with avy
-;; (global-set-key (kbd "M-m") 'avy-goto-char-timer)
+;; replaced iy-go-to-char with avy
+(global-set-key (kbd "M-m") 'avy-goto-char-timer)
 
 ;; C-u <avy shortcut> will do only only buffer highligted (opposite all-windows)
 ;; make that behavior a stand alone function
