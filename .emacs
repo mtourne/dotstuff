@@ -127,35 +127,15 @@
  '(hl-sexp-background-color "#1c1f26")
  '(js2-basic-offset 2)
  '(mouse-wheel-mode t)
- '(package-selected-packages (quote (ample-zen-theme gruvbox-theme clipmon rjsx-mode)))
+ '(package-selected-packages
+   (quote
+    (protobuf-mode ample-theme ample-zen-theme gruvbox-theme clipmon rjsx-mode)))
  '(safe-local-variable-values (quote ((py-indent-offset . 4))))
  '(show-paren-mode t)
  '(tab-stop-list
    (quote
     (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)))
- '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify))
- '(vc-annotate-background nil)
- '(vc-annotate-color-map
-   (quote
-    ((20 . "#f36c60")
-     (40 . "#ff9800")
-     (60 . "#fff59d")
-     (80 . "#8bc34a")
-     (100 . "#81d4fa")
-     (120 . "#4dd0e1")
-     (140 . "#b39ddb")
-     (160 . "#f36c60")
-     (180 . "#ff9800")
-     (200 . "#fff59d")
-     (220 . "#8bc34a")
-     (240 . "#81d4fa")
-     (260 . "#4dd0e1")
-     (280 . "#b39ddb")
-     (300 . "#f36c60")
-     (320 . "#ff9800")
-     (340 . "#fff59d")
-     (360 . "#8bc34a"))))
- '(vc-annotate-very-old-color nil))
+ '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify)))
 
 ;;; Ido completion ;;; deprecated for helm.
 
@@ -421,6 +401,7 @@
 ;; for console emacs where C-. / C-, is not working
 (global-set-key (kbd "C-x .") 'goto-last-change)
 (global-set-key (kbd "C-x ,") 'goto-last-change-reverse)
+
 
 ;;; Opening New lines ;;;
 ;; Behave like vi's o command
