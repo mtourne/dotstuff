@@ -72,6 +72,7 @@
 ;; expand semantic region
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
+(global-set-key (kbd "C-x =") 'er/expand-region)
 
 
 ;;; Emacs Faces ;;;;
@@ -87,15 +88,15 @@
 ;;(powerline-default-theme)
 
 ;;; spaceline ;;;
-(require 'spaceline-config)
-(spaceline-spacemacs-theme)
+;; (require 'spaceline-config)
+;; (spaceline-spacemacs-theme)
 
 ;;; Color Theme ;;;
-;; old one
 
-;;(load-theme 'material-light t)
-;;(load-theme 'material t)
+;;; good one
 (load-theme 'ample-zen t)
+;;; good light
+;;(load-theme 'ample-light t)
 
 ;; color-theme doesn't need to be required anymore
 ;;(require 'color-theme)
@@ -105,9 +106,6 @@
 ;; in `dotstuff/emacs/color-theme-tango.el`
 ;;(require 'color-theme-tango)
 ;;(color-theme-tango)
-
-;; tango-tango, similar to customized above
-;(load-theme 'tangotango t)
 
 ;; invert face (colore theme is better)
 ;(invert-face 'default)
@@ -123,7 +121,7 @@
  '(column-number-mode t)
  '(custom-safe-themes
    (quote
-    ("98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" default)))
+    ("1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "6de7c03d614033c0403657409313d5f01202361e35490a3404e33e46663c2596" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "5dc0ae2d193460de979a463b907b4b2c6d2c9c4657b2e9e66b8898d2592e3de5" default)))
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--C-mouse-1))
  '(fci-rule-color "#37474f")
  '(hl-sexp-background-color "#1c1f26")
@@ -419,6 +417,10 @@
 (require 'goto-chg)
 (global-set-key (kbd "C-.") 'goto-last-change)
 (global-set-key (kbd "C-,") 'goto-last-change-reverse)
+
+;; for console emacs where C-. / C-, is not working
+(global-set-key (kbd "C-x .") 'goto-last-change)
+(global-set-key (kbd "C-x ,") 'goto-last-change-reverse)
 
 ;;; Opening New lines ;;;
 ;; Behave like vi's o command
